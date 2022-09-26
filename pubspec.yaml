@@ -32,8 +32,10 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc: ^8.1.1
+  nepali_date_picker: null
+  text_scroll: ^0.1.0
   video_player: ^2.4.7
-  youtube_player_flutter: 
+  youtube_player_flutter: null
 
 dev_dependencies:
   flutter_lints: ^1.0.0

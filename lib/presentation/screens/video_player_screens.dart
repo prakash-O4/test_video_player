@@ -4,9 +4,13 @@ import 'package:video_player/video_player.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final VideoModel video;
+  final PageController controller;
+  final int? nextPage;
   const VideoPlayerScreen({
     Key? key,
     required this.video,
+    required this.controller,
+    this.nextPage,
   }) : super(key: key);
 
   @override
@@ -18,31 +22,36 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late ValueNotifier<bool> showPlay = ValueNotifier(true);
   late String url;
   int? repeatNumber = 1;
+  bool hasPlayed = false;
+  late bool? start;
   @override
   void initState() {
     super.initState();
+    start = false;
     url = widget.video.url;
     _controller = VideoPlayerController.network(url)
       ..initialize().then((value) {
         setState(() {});
       });
-    if (widget.video.numOfRepeatition != null) {
-      _controller.addListener(() {
-        if (_controller.value.position == _controller.value.duration &&
-            repeatNumber != widget.video.numOfRepeatition) {
-          if (repeatNumber == null) {
-            repeatNumber = 1;
-          } else {
-            repeatNumber = repeatNumber! + 1;
+    _controller.addListener(
+      () {
+        if (_controller.value.position == _controller.value.duration) {
+          if (start != null && start == false) {
+            if (widget.nextPage != null) {
+              widget.controller.animateToPage(
+                widget.nextPage!,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeIn,
+              );
+            }
+            setState(() {
+              start = true;
+            });
           }
-          if (!_controller.value.isPlaying) {
-            _controller.play();
-          }
-        } else {
           _controller.removeListener(() {});
         }
-      });
-    }
+      },
+    );
   }
 
   @override
@@ -53,8 +62,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_controller.value.isInitialized && !hasPlayed) {
+      _controller.play();
+      setState(() {
+        hasPlayed = true;
+      });
+    }
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.only(left: 8.0, right: 8),
       child: SizedBox(
         child: _controller.value.isInitialized
             ? Stack(
@@ -66,23 +81,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                     ),
                   ),
                   Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.4),
-                          shape: BoxShape.circle),
-                      child: Text(
-                        widget.video.numOfRepeatition?.toString() ?? "1",
-                        style: const TextStyle(
-                          fontSize: 17,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
                     top: 0,
                     left: 0,
                     right: 0,
@@ -91,7 +89,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                       valueListenable: showPlay,
                       builder: (context, value, child) {
                         return Visibility(
-                          visible: value as bool,
+                          visible: true,
                           child: IconButton(
                             onPressed: () {
                               showPlay.value = !showPlay.value;

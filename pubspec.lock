@@ -156,6 +156,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.7.0"
+  nepali_date_picker:
+    dependency: "direct main"
+    description:
+      name: nepali_date_picker
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "5.2.0"
+  nepali_utils:
+    dependency: transitive
+    description:
+      name: nepali_utils
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.3"
   nested:
     dependency: transitive
     description:
@@ -231,6 +245,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.4.8"
+  text_scroll:
+    dependency: "direct main"
+    description:
+      name: text_scroll
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0"
   typed_data:
     dependency: transitive
     description:

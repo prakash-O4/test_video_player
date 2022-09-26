@@ -1,7 +1,8 @@
 class VideoModel {
   final String title;
   final String url;
-  final int repeat;
+  int repeat;
+  int? reminder;
   int? numOfRepeatition;
   bool hasTimer;
   int? minute;

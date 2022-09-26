@@ -14,10 +14,19 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
   void fetchVideo() async {
     emit(VideoPlayerLoading());
     List<VideoModel> videos = await videoRepository.fetchVideoData();
-    emit(VideoPlayerLoaded(videos: _sortVideosByRepeat(videos)));
+    emit(VideoPlayerLoaded(videos: _getVideoFromLocal(videos)));
   }
 
-  List<VideoModel> _sortVideosByRepeat(List<VideoModel> videos) {
+  List<VideoModel> _getVideoFromLocal(List<VideoModel> videos) {
+    List<Map<String, dynamic>> sortedVideos = _sortVideosByRepeat(videos);
+    List<VideoModel> finalVideos = [];
+    for (var i = 0; i < sortedVideos.length; i++) {
+      finalVideos = finalVideos + _convertMapToList(sortedVideos[i]);
+    }
+    return finalVideos;
+  }
+
+  List<Map<String, dynamic>> _sortVideosByRepeat(List<VideoModel> videos) {
     int length = videos.length;
     for (int i = 0; i < length - 1; i++) {
       for (int j = 0; j < length - i - 1; j++) {
@@ -28,14 +37,59 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
         }
       }
     }
-    return _calculateNumOfRepition(videos);
+    return _checkVideoRatio(videos);
   }
 
-  List<VideoModel> _calculateNumOfRepition(List<VideoModel> videos) {
-    for (var i = 1; i < videos.length; i++) {
-      double repeatValue = videos[i].repeat / videos[0].repeat;
-      videos[i].numOfRepeatition = repeatValue.round();
+  List<Map<String, dynamic>> _checkVideoRatio(List<VideoModel> number) {
+    if (number.isNotEmpty) {
+      Map<String, dynamic> repeatValue = {};
+      int firstNumber = number.first.repeat;
+      List<VideoModel> total = [];
+      List<VideoModel> reminder = [];
+      List<Map<String, dynamic>> finalSum = [];
+      List<VideoModel> calcVideo = [];
+      for (int i = 0; i < number.length; i++) {
+        double div = number[i].repeat / firstNumber;
+        int rem = number[i].repeat % firstNumber;
+        if (rem != 0) {
+          number[i].reminder = rem;
+          reminder.add(number[i]);
+        }
+        number[i].repeat = div.floor();
+        total.add(number[i]);
+        //print("Repeat Number is ${total[i].repeat}");
+      }
+      for (int i = 0; i < total.length; i++) {
+//       print("Repeat Number is ${total[i].repeat}");
+        calcVideo =
+            calcVideo + List<VideoModel>.filled(total[i].repeat, total[i]);
+      }
+      if (reminder.isNotEmpty) {
+        finalSum = _checkVideoRatio(reminder);
+      }
+
+      repeatValue["repeat"] = firstNumber;
+      repeatValue["videos"] = calcVideo;
+//     print(repeatValue);
+      return ([repeatValue] + finalSum);
     }
-    return videos;
+    return [];
+  }
+
+  List<VideoModel> _convertMapToList(Map<String, dynamic> videos) {
+    int repeatNumber = 0;
+    List<VideoModel> finalVideos = [];
+    videos.forEach((key, value) {
+      if (key == "repeat") {
+        repeatNumber = value;
+      }
+      if (key == "videos") {
+        for (int i = 0; i < repeatNumber; i++) {
+          (value as List<VideoModel>).shuffle();
+          finalVideos = finalVideos + value;
+        }
+      }
+    });
+    return finalVideos;
   }
 }
